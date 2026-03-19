@@ -51,6 +51,10 @@ body {
     margin-bottom: 2rem;
 }
 
+#search-button{
+    background-color: #3ec46d;
+}
+
 .is-shady {
     animation: flyintoright 0.4s backwards;
     background: #fff;
@@ -63,8 +67,15 @@ body {
     width: 100%;
 }
 
+
 .is-shady:hover {
     box-shadow: 0 10px 16px rgba(0, 0, 0, 0.13), 0 6px 6px rgba(0, 0, 0, 0.19);
+}
+
+.columns.books {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 @media (min-width: 800px) {

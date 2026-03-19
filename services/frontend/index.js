@@ -88,3 +88,72 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error(err);
         });
 });
+
+// Função simples de busca
+function filtrarLivros() {
+    const termoRaw = document.getElementById('search-input').value.trim();
+    const termo = termoRaw.toLowerCase();
+    const booksContainer = document.querySelector('.books');
+
+    // Se campo vazio, mostra todos
+    if (!termo) {
+        document.querySelectorAll('.column.is-4').forEach(card => card.style.display = 'block');
+        return;
+    }
+
+    // Se for um número (id), consulta o backend /product/:id
+    if (/^\d+$/.test(termoRaw)) {
+        fetch('http://localhost:3000/product/' + termoRaw)
+            .then((res) => {
+                if (res.ok) return res.json();
+                if (res.status === 404) return null;
+                throw res.statusText;
+            })
+            .then((product) => {
+                // Esconde todos antes de mostrar resultado
+                document.querySelectorAll('.column.is-4').forEach(card => card.style.display = 'none');
+
+                if (!product) {
+                    swal('Busca', 'Produto não encontrado', 'warning');
+                    return;
+                }
+
+                // Tenta encontrar o card já presente na página
+                const existing = document.querySelector(`.book[data-id="${product.id}"]`);
+                if (existing) {
+                    existing.closest('.column.is-4').style.display = 'block';
+                } else {
+                    // Se não existe, adiciona o produto buscado (evita duplicatas futuras)
+                    booksContainer.appendChild(newBook(product));
+                }
+            })
+            .catch((err) => {
+                swal('Erro', 'Erro ao consultar produto', 'error');
+                console.error(err);
+            });
+        return;
+    }
+
+    // Busca por texto no título, autor ou id (como string)
+    document.querySelectorAll('.column.is-4').forEach(card => {
+        const titleEl = card.querySelector('.title');
+        const authorEl = card.querySelector('.subtitle');
+        const bookEl = card.querySelector('.book');
+        const nomeLivro = titleEl ? titleEl.innerText.toLowerCase() : '';
+        const autor = authorEl ? authorEl.innerText.toLowerCase() : '';
+        const idAttr = bookEl ? (bookEl.getAttribute('data-id') || '') : '';
+
+        if (nomeLivro.includes(termo) || autor.includes(termo) || idAttr === termoRaw) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Ativa a busca ao clicar no botão ou ao digitar
+document.getElementById('search-button').addEventListener('click', filtrarLivros);
+
+document.getElementById('search-input').addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') filtrarLivros();
+});
